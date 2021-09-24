@@ -27,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -54,8 +55,15 @@ public class AuthenticationController {
     private final JwtProperties jwtProperties;
     private final RestTemplate restTemplate;
 
+    private final PasswordEncoder passwordEncoder;
+
     @GetMapping("/csrf-token")
     public ResponseEntity<?> getCsrfToken(HttpServletRequest request, HttpServletResponse response) {
+
+
+        String encode = passwordEncoder.encode("1234");
+        System.out.println("encode = " + encode);
+
         String csrfToken = UUID.randomUUID().toString();
 
         Map<String, String> resMap = new HashMap<>();
@@ -88,7 +96,7 @@ public class AuthenticationController {
 
             AuthorizationResponse authorizationResponse = AuthorizationResponse.builder()
                     .access_token(accessToken)
-                    .expires_in(jwtProperties.getTokenExpired())
+                    .expires_in(jwtProperties.getAccessTokenExpired())
                     .member_seq(userDetails.getId())
                     .member_id(userDetails.getUsername())
                     .authorities(userDetails.getAuthorities())
@@ -180,21 +188,21 @@ public class AuthenticationController {
     }
 
     private String generateAccessTokenCookie(UserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
-        final int cookieMaxAge = jwtProvider.getTokenExpirationDate().intValue();
+        final int cookieMaxAge = jwtProvider.getAccessTokenExpirationDate().intValue();
         //https 프로토콜인 경우 secure 옵션사용
         boolean secure = request.isSecure();
         String accessToken = jwtProvider.generateAccessToken(userDetails.getUsername());
-        CookieUtils.addCookie(response, "access_token", accessToken, true, secure, cookieMaxAge);
+        //CookieUtils.addCookie(response, "access_token", accessToken, true, secure, cookieMaxAge);
 
         return accessToken;
     }
 
     private String generateRefreshTokenCookie(UserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
-        final int cookieMaxAge = jwtProvider.getTokenExpirationDate().intValue();
+        final int cookieMaxAge = jwtProvider.getAccessTokenExpirationDate().intValue();
         //https 프로토콜인 경우 secure 옵션사용
         boolean secure = request.isSecure();
         String accessToken = jwtProvider.generateRefreshToken(userDetails.getUsername());
-        CookieUtils.addCookie(response, "refresh_token", accessToken, true, secure, cookieMaxAge);
+        //CookieUtils.addCookie(response, "refresh_token", accessToken, true, secure, cookieMaxAge);
 
         return accessToken;
     }

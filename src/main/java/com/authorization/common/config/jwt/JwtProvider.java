@@ -42,12 +42,12 @@ public class JwtProvider {
 
     public String generateAccessToken(String username) {
         Map<String, Object> claims = new HashMap<>();
-        return generateToken(claims, username, jwtProperties.getSecretKey(), jwtProperties.getTokenExpired());
+        return generateToken(claims, username, jwtProperties.getSecretKey(), jwtProperties.getAccessTokenExpired());
     }
 
     public String generateRefreshToken(String username) {
         Map<String, Object> claims = new HashMap<>();
-        return generateToken(claims, username, jwtProperties.getSecretKey(), jwtProperties.getTokenExpired());
+        return generateToken(claims, username, jwtProperties.getSecretKey(), jwtProperties.getRefreshTokenExpired());
     }
 
     private String generateToken(Map<String, Object> claims, String subject, String key, Long expiryTime) {
@@ -67,8 +67,11 @@ public class JwtProvider {
         return (username.equals(tokenUsername) && !isTokenExpired(token));
     }
 
-    public Long getTokenExpirationDate() {
-        return jwtProperties.getTokenExpired();
+    public Long getAccessTokenExpirationDate() {
+        return jwtProperties.getAccessTokenExpired();
     }
 
+    public Long getRefreshTokenExpirationDate() {
+        return jwtProperties.getRefreshTokenExpired();
+    }
 }

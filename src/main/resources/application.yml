@@ -72,7 +72,8 @@ spring:
 jwt:
   secretKey: test
   signatureAlgorithm: HS256
-  tokenExpired: 604800 #(sec) 7 days
+  accessTokenExpired: 604800 #(sec) 7 days
+  refreshTokenExpired: 604800 #(sec) 7 days
 
 client:
   origins: http://localhost:3000
