@@ -25,7 +25,7 @@ public class ClientRegistrationRepository {
     private static Map<String, ClientRegistration> toUnmodifiableConcurrentMap(List<ClientRegistration> registrations) {
         ConcurrentHashMap<String, ClientRegistration> result = new ConcurrentHashMap<>();
         for (ClientRegistration registration : registrations)
-            result.put(registration.getRegistrationId(), registration);
+            result.put(registration.getRegistrationId().getProvider(), registration);
         return Collections.unmodifiableMap(result);
     }
 

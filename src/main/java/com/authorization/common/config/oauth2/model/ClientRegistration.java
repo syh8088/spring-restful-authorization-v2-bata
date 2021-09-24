@@ -1,5 +1,6 @@
 package com.authorization.common.config.oauth2.model;
 
+import com.authorization.domain.memberSocial.enums.Provider;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 public final class ClientRegistration {
 
-    private String registrationId;
+    private Provider registrationId;
     private String clientId;
     private String clientSecret;
     private String authorizationGrantType;
@@ -23,7 +24,7 @@ public final class ClientRegistration {
 
     @Builder
     public ClientRegistration(
-            String registrationId, String clientId,
+            Provider registrationId, String clientId,
             String authorizationGrantType, String clientSecret,
             String redirectUri, Set<String> scopes,
             String authorizationUri, String tokenUri,

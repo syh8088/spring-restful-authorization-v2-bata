@@ -30,6 +30,25 @@ public class OAuth2Config {
     }
 
     private ClientRegistration getRegistration(String client) {
+
+        Provider provider = Provider.getByProvider(client);
+        ClientRegistration clientRegistration = ClientRegistration.builder()
+                .registrationId(provider)
+                .clientId(oAuth2ClientProperties.getRegistration().get(client).getClientId())
+                .clientSecret(oAuth2ClientProperties.getRegistration().get(client).getClientSecret())
+                .authorizationGrantType(oAuth2ClientProperties.getRegistration().get(client).getAuthorizationGrantType())
+                .redirectUri(oAuth2ClientProperties.getRegistration().get(client).getRedirectUri())
+                .scopes(oAuth2ClientProperties.getRegistration().get(client).getScope())
+                .authorizationUri(oAuth2ClientProperties.getProvider().get(client).getAuthorizationUri())
+                .tokenUri(oAuth2ClientProperties.getProvider().get(client).getTokenUri())
+                .userInfoUri(oAuth2ClientProperties.getProvider().get(client).getUserInfoUri())
+                .unlinkUri(oAuth2ClientProperties.getProvider().get(client).getUnlinkUri())
+                .build();
+
+        System.out.println("clientRegistration = " + clientRegistration);
+
+        return clientRegistration;
+/*
         if (client.equals("google")) {
             return Provider.GOOGLE.getBuilder(client)
                     .clientId(oAuth2ClientProperties.getRegistration().get(client).getClientId())
@@ -68,7 +87,7 @@ public class OAuth2Config {
                     .userInfoUri(oAuth2ClientProperties.getProvider().get(client).getUserInfoUri())
                     .unlinkUri(oAuth2ClientProperties.getProvider().get(client).getUnlinkUri())
                     .build();
-        }
-        return null;
+        }*/
+        //return null;
     }
 }

@@ -25,7 +25,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
@@ -38,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -84,9 +82,7 @@ public class AuthenticationController {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authorizationRequest.getUsername(), authorizationRequest.getPassword()));
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-            String accessToken = generateTokenCookie(userDetails, request, response);
-
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+            String accessToken = generateAccessTokenCookie(userDetails, request, response);
 
             generateCSRFTokenCookie(response);
 
@@ -162,7 +158,7 @@ public class AuthenticationController {
         //로그인에 대한 콜백 처리
         if (oAuth2AuthorizationRequest.getCallback().equalsIgnoreCase("login")) {
             UserDetails userDetails = memberQueryService.loginOAuth2User(provider, oAuth2Token, oAuth2UserInfo);
-            generateTokenCookie(userDetails, request, response);
+            generateAccessTokenCookie(userDetails, request, response);
         }
         //계정 연동에 대한 콜백 처리
         else if (oAuth2AuthorizationRequest.getCallback().equalsIgnoreCase("link")) {
@@ -183,12 +179,22 @@ public class AuthenticationController {
         response.sendRedirect(oAuth2AuthorizationRequest.getRedirectUri());
     }
 
-    private String generateTokenCookie(UserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
+    private String generateAccessTokenCookie(UserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
         final int cookieMaxAge = jwtProvider.getTokenExpirationDate().intValue();
         //https 프로토콜인 경우 secure 옵션사용
         boolean secure = request.isSecure();
-        String accessToken = jwtProvider.generateToken(userDetails.getUsername());
+        String accessToken = jwtProvider.generateAccessToken(userDetails.getUsername());
         CookieUtils.addCookie(response, "access_token", accessToken, true, secure, cookieMaxAge);
+
+        return accessToken;
+    }
+
+    private String generateRefreshTokenCookie(UserDetails userDetails, HttpServletRequest request, HttpServletResponse response) {
+        final int cookieMaxAge = jwtProvider.getTokenExpirationDate().intValue();
+        //https 프로토콜인 경우 secure 옵션사용
+        boolean secure = request.isSecure();
+        String accessToken = jwtProvider.generateRefreshToken(userDetails.getUsername());
+        CookieUtils.addCookie(response, "refresh_token", accessToken, true, secure, cookieMaxAge);
 
         return accessToken;
     }

@@ -40,12 +40,17 @@ public class JwtProvider {
         return extractExpiration(token).isBefore(LocalDateTime.now());
     }
 
-    public String generateToken(String username) {
+    public String generateAccessToken(String username) {
         Map<String, Object> claims = new HashMap<>();
-        return generateToken(claims, username, jwtProperties.getTokenExpired());
+        return generateToken(claims, username, jwtProperties.getSecretKey(), jwtProperties.getTokenExpired());
     }
 
-    private String generateToken(Map<String, Object> claims, String subject, Long expiryTime) {
+    public String generateRefreshToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return generateToken(claims, username, jwtProperties.getSecretKey(), jwtProperties.getTokenExpired());
+    }
+
+    private String generateToken(Map<String, Object> claims, String subject, String key, Long expiryTime) {
 
         LocalDateTime expiryDate = LocalDateTime.now().plusSeconds(expiryTime);
         return Jwts.builder()
@@ -53,7 +58,7 @@ public class JwtProvider {
                 .setSubject(subject)
                 .setIssuedAt(DateConvertor.toDate(LocalDateTime.now()))
                 .setExpiration(DateConvertor.toDate(expiryDate))
-                .signWith(jwtProperties.getSignatureAlgorithm(), jwtProperties.getSecretKey())
+                .signWith(jwtProperties.getSignatureAlgorithm(), key)
                 .compact();
     }
 
