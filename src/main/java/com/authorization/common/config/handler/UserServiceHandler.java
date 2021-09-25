@@ -1,9 +1,10 @@
 package com.authorization.common.config.handler;
 
-
 import com.authorization.common.config.authentication.model.transfer.UserDetailsImpl;
 import com.authorization.domain.member.model.entity.Member;
-import com.authorization.domain.member.repository.MemberRepository;
+import com.authorization.domain.member.service.query.MemberQueryService;
+import com.authorization.domain.role.model.entity.Role;
+import com.authorization.domain.role.service.query.RoleQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,19 +22,22 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserServiceHandler implements UserDetailsService {
 
-    private final MemberRepository memberRepository;
+    private final MemberQueryService memberQueryService;
+    private final RoleQueryService roleQueryService;
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        Member member = memberRepository.findByIdAndUseYn(username, true);
+        Member member = memberQueryService.selectMemberById(username);
 
         if (member == null) {
             throw new UsernameNotFoundException("unsername not found");
         }
 
-        List<SimpleGrantedAuthority> grants = member.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
+        List<Role> roles = roleQueryService.selectAllRolesByMember(member);
+
+        List<SimpleGrantedAuthority> grants = roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
 
         UserDetailsImpl userDetails = UserDetailsImpl.builder()
                 .id(member.getMemberNo())
@@ -42,7 +46,7 @@ public class UserServiceHandler implements UserDetailsService {
                 .email(member.getEmail())
                 .password(member.getPassword())
                 .memberType(member.getMemberType())
-                .authorities(member.getAuthorities())
+                .authorities(grants)
                 .build();
 
         return userDetails;

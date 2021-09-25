@@ -2,6 +2,7 @@ package com.authorization.domain.member.model.entity;
 
 import com.authorization.common.entity.Common;
 import com.authorization.domain.member.enums.MemberType;
+import com.authorization.domain.memberRoleMapping.MemberRoleMapping;
 import com.authorization.domain.memberSocial.model.entity.MemberSocial;
 import com.authorization.domain.role.model.entity.Role;
 import lombok.*;
@@ -37,14 +38,17 @@ public class Member extends Common {
 
     private String oauthId;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+  /*  @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "member_role_mapping", joinColumns = @JoinColumn(name = "memberNo"), inverseJoinColumns = @JoinColumn(name = "roleNo"))
-    private List<Role> roles = new ArrayList<>();
+    private List<Role> roles = new ArrayList<>();*/
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "member")
+    private List<MemberRoleMapping> memberRoleMappings = new ArrayList<>();
 
     private LocalDateTime todayLogin;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "MEMBER_SOCIAL_NO")
+    @JoinColumn(name = "member_social_no")
     private MemberSocial memberSocial;
 
     @Builder
@@ -57,12 +61,17 @@ public class Member extends Common {
         this.email = email;
         this.name = name;
         this.memberType = memberType;
-        this.roles.add(role);
+        this.memberRoleMappings.add(
+                MemberRoleMapping.builder()
+                .member(this)
+                .role(role)
+                .build()
+        );
         this.todayLogin = todayLogin;
     }
 
     //public Collection<? extends GrantedAuthority> getAuthorities() {
     public List<SimpleGrantedAuthority> getAuthorities() {
-        return this.roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
+        return this.memberRoleMappings.stream().map(memberRoleMapping -> new SimpleGrantedAuthority(memberRoleMapping.getRole().getName())).collect(Collectors.toList());
     }
 }

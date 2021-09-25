@@ -32,6 +32,10 @@ public class MemberQueryService {
     private final MemberRepository memberRepository;
     private final MemberSocialRepository memberSocialRepository;
 
+    public Member selectMemberById(String username) {
+        return memberRepository.findByIdAndUseYn(username, true);
+    }
+
     public UserDetails loginOAuth2User(Provider provider, OAuth2Token oAuth2Token, OAuth2UserInfo userInfo) {
 
         MemberSocial memberSocial = memberSocialRepository.selectMemberSocialByProviderAndProviderId(provider, userInfo.getId());
