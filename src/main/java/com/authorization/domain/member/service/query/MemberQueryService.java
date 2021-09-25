@@ -1,6 +1,6 @@
 package com.authorization.domain.member.service.query;
 
-import com.authorization.common.config.authentication.UserDetailsImpl;
+import com.authorization.common.config.authentication.model.transfer.UserDetailsImpl;
 import com.authorization.common.config.oauth2.model.response.OAuth2Token;
 import com.authorization.common.config.oauth2.model.response.userInfo.OAuth2UserInfo;
 import com.authorization.domain.config.model.entity.Config;

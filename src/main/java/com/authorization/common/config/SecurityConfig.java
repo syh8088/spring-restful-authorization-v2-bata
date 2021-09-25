@@ -48,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/csrf-token").permitAll()
-                .antMatchers(HttpMethod.POST, "/authorize", "/users").anonymous()
+                .antMatchers(HttpMethod.POST, "/authorize", "/authorize/refresh", "/users").anonymous()
                 .antMatchers(HttpMethod.POST, "/oauth2/unlink").authenticated()
                 .antMatchers("/oauth2/**").permitAll()
                 .anyRequest().authenticated().and()

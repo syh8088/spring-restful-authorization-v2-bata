@@ -1,4 +1,4 @@
-package com.authorization.common.config.authentication;
+package com.authorization.common.config.authentication.model.response;
 
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;

@@ -2,9 +2,9 @@ package com.authorization.common.config.error.errorCode;
 
 public enum MemberErrorCode implements ErrorCode {
 
-    NOT_VALID_PASSWORD_LENGTH("MEC0001"),
-    ALREADY_JOIN_ID("MFC0002"),
-    NOT_FOUND_MEMBER("MFC0003");
+    NOT_EXIST_USERNAME_OR_PASSWORD("MEC0001"),
+    AUTHENTICATION_FAILED("MEC0002"),
+    INVALID_TOKEN("MEC0003");
 
     private final String code;
 

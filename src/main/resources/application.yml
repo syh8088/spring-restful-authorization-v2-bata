@@ -70,10 +70,11 @@ spring:
             unlink-uri: https://kapi.kakao.com/v1/user/unlink
 
 jwt:
-  secretKey: test
+  secretKey: testtesttesttesttest42fwef234132412wqdfqwf12
+  refreshKey: testtesttesttesttest42fwef234132412wqdfqwf12vvdsvsd
   signatureAlgorithm: HS256
   accessTokenExpired: 604800 #(sec) 7 days
-  refreshTokenExpired: 604800 #(sec) 7 days
+  refreshTokenExpired: 6048000 #(sec) 7 days
 
 client:
   origins: http://localhost:3000

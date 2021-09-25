@@ -1,7 +1,7 @@
 package com.authorization.common.config.handler;
 
 
-import com.authorization.common.config.authentication.UserDetailsImpl;
+import com.authorization.common.config.authentication.model.transfer.UserDetailsImpl;
 import com.authorization.domain.member.model.entity.Member;
 import com.authorization.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;

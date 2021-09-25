@@ -1,6 +1,6 @@
 package com.authorization.common.config.filter;
 
-import com.authorization.common.config.authentication.UserDetailsImpl;
+import com.authorization.common.config.authentication.model.transfer.UserDetailsImpl;
 import com.authorization.common.config.handler.UserServiceHandler;
 import com.authorization.common.config.jwt.JwtProvider;
 import com.authorization.util.CookieUtils;
@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if(jwtCookie.isPresent()){
             jwt = jwtCookie.get().getValue();
-            username = jwtProvider.extractUsername(jwt);
+            username = jwtProvider.extractUsernameByAccessToken(jwt);
         }
 
         /**
@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetailsImpl userDetails = (UserDetailsImpl) userServiceHandler.loadUserByUsername(username);
 
             //토큰이 유효하다면
-            if (jwtProvider.validateToken(jwt, userDetails.getUsername())) {
+            if (jwtProvider.validateAccessToken(jwt, userDetails.getUsername())) {
                 //새로운 인증 정보를 생성
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -57,6 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

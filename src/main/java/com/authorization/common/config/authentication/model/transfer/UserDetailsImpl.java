@@ -1,4 +1,4 @@
-package com.authorization.common.config.authentication;
+package com.authorization.common.config.authentication.model.transfer;
 
 import com.authorization.domain.member.enums.MemberType;
 import lombok.Builder;

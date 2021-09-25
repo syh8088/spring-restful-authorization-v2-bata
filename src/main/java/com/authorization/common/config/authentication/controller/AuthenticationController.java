@@ -1,9 +1,14 @@
-package com.authorization.common.config.oauth2.controller;
+package com.authorization.common.config.authentication.controller;
 
-import com.authorization.common.config.authentication.AuthorizationRequest;
-import com.authorization.common.config.authentication.AuthorizationResponse;
-import com.authorization.common.config.authentication.UserDetailsImpl;
+import com.authorization.common.config.authentication.model.request.AuthorizationRefreshRequest;
+import com.authorization.common.config.authentication.model.request.AuthorizationRequest;
+import com.authorization.common.config.authentication.model.response.AuthorizationResponse;
+import com.authorization.common.config.authentication.model.transfer.UserDetailsImpl;
+import com.authorization.common.config.error.errorCode.MemberErrorCode;
+import com.authorization.common.config.error.exception.AuthenticationFailedException;
+import com.authorization.common.config.error.validator.MemberValidator;
 import com.authorization.common.config.filter.StatelessCSRFFilter;
+import com.authorization.common.config.handler.UserServiceHandler;
 import com.authorization.common.config.jwt.JwtProvider;
 import com.authorization.common.config.oauth2.model.ClientRegistration;
 import com.authorization.common.config.oauth2.model.request.OAuth2AuthorizationRequest;
@@ -28,7 +33,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -54,8 +58,9 @@ public class AuthenticationController {
     private final JwtProvider jwtProvider;
     private final JwtProperties jwtProperties;
     private final RestTemplate restTemplate;
-
+    private final MemberValidator memberValidator;
     private final PasswordEncoder passwordEncoder;
+    private final UserServiceHandler userServiceHandler;
 
     @GetMapping("/csrf-token")
     public ResponseEntity<?> getCsrfToken(HttpServletRequest request, HttpServletResponse response) {
@@ -77,25 +82,24 @@ public class AuthenticationController {
     @PostMapping("/authorize")
     public ResponseEntity<AuthorizationResponse> authenticateUsernamePassword(
             @RequestBody AuthorizationRequest authorizationRequest,
-            BindingResult bindingResult,
             HttpServletRequest request,
             HttpServletResponse response
-    ) throws IOException {
+    ) {
 
-        if (bindingResult.hasErrors()) {
-            //throw new ValidationException("로그인 유효성 검사 실패.", bindingResult.getFieldErrors());
-        }
+        memberValidator.authenticateUsernamePassword(authorizationRequest);
 
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authorizationRequest.getUsername(), authorizationRequest.getPassword()));
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
             String accessToken = generateAccessTokenCookie(userDetails, request, response);
+            String refreshToken = generateRefreshTokenCookie(userDetails, request, response);
 
             generateCSRFTokenCookie(response);
 
             AuthorizationResponse authorizationResponse = AuthorizationResponse.builder()
                     .access_token(accessToken)
+                    .refresh_token(refreshToken)
                     .expires_in(jwtProperties.getAccessTokenExpired())
                     .member_seq(userDetails.getId())
                     .member_id(userDetails.getUsername())
@@ -104,10 +108,38 @@ public class AuthenticationController {
 
             return ResponseEntity.ok().body(authorizationResponse);
         } catch (AuthenticationException e) {
-            //throw new AuthenticationFailedException("아이디 또는 패스워드가 틀렸습니다.");
+            throw new AuthenticationFailedException(MemberErrorCode.AUTHENTICATION_FAILED);
         }
+    }
 
-        return null;
+    @PostMapping("/authorize/refresh")
+    public ResponseEntity<AuthorizationResponse> authenticateRefresh(
+            @RequestBody AuthorizationRefreshRequest authorizationRefreshRequest,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        String username = jwtProvider.extractUsernameByRefreshToken(authorizationRefreshRequest.getRefreshToken());
+        UserDetailsImpl userDetails = (UserDetailsImpl) userServiceHandler.loadUserByUsername(username);
+
+        //토큰이 유효하다면
+        if (jwtProvider.validateRefreshToken(authorizationRefreshRequest.getRefreshToken(), userDetails.getUsername())) {
+
+            String accessToken = generateAccessTokenCookie(userDetails, request, response);
+            String refreshToken = generateRefreshTokenCookie(userDetails, request, response);
+
+            AuthorizationResponse authorizationResponse = AuthorizationResponse.builder()
+                    .access_token(accessToken)
+                    .refresh_token(refreshToken)
+                    .expires_in(jwtProperties.getAccessTokenExpired())
+                    .member_seq(userDetails.getId())
+                    .member_id(userDetails.getUsername())
+                    .authorities(userDetails.getAuthorities())
+                    .build();
+
+            return ResponseEntity.ok().body(authorizationResponse);
+        } else {
+            throw new AuthenticationFailedException(MemberErrorCode.INVALID_TOKEN);
+        }
     }
 
     /* 토큰 쿠키를 삭제하는 컨트롤러 (로그아웃) */

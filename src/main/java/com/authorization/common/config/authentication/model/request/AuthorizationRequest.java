@@ -1,4 +1,4 @@
-package com.authorization.common.config.authentication;
+package com.authorization.common.config.authentication.model.request;
 
 import lombok.*;
 
@@ -6,9 +6,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuthorizationRequest {
-   // @NotBlank(message = "이메일을 입력하세요.")
+
     private String username;
-   // @NotBlank(message = "패스워드를 입력하세요.")
     private String password;
 
     @Builder

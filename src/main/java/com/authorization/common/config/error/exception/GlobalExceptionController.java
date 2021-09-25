@@ -11,17 +11,26 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class GlobalExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = CommonException.class) // 클래스 단위로도 사용 가능(필요한 컨트롤러 내에 선언)
+    @ExceptionHandler(value = CommonException.class)
     @ResponseBody
-    public CommonErrorResponse handleBaseException(CommonException e) {
-        System.out.println(e.getMessage());
-        System.out.println(e.getErrorCode());
-        /*
-            여기서 원하는 형태로 response 하면 된다.
-         */
+    public CommonErrorResponse handleCommonException(CommonException e) {
+
         return CommonErrorResponse.builder()
                 .errorCode(e.getErrorCode())
                 .message(e.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(value = AuthenticationFailedException.class)
+    @ResponseBody
+    public CommonErrorResponse handleAuthenticationFailedException(AuthenticationFailedException e) {
+
+        return CommonErrorResponse.builder()
+                .errorCode(e.getErrorCode())
+                .message(e.getMessage())
+                .status(HttpStatus.FORBIDDEN.value())
                 .build();
     }
 
