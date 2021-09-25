@@ -1,6 +1,8 @@
 package com.authorization.common.config.handler;
 
 import com.authorization.common.config.authentication.model.transfer.UserDetailsImpl;
+import com.authorization.common.config.error.errorCode.MemberErrorCode;
+import com.authorization.common.config.error.exception.UserIdNotFoundException;
 import com.authorization.domain.member.model.entity.Member;
 import com.authorization.domain.member.service.query.MemberQueryService;
 import com.authorization.domain.role.model.entity.Role;
@@ -32,7 +34,7 @@ public class UserServiceHandler implements UserDetailsService {
         Member member = memberQueryService.selectMemberById(username);
 
         if (member == null) {
-            throw new UsernameNotFoundException("unsername not found");
+            throw new UserIdNotFoundException(MemberErrorCode.NOT_FOUND_USERNAME);
         }
 
         List<Role> roles = roleQueryService.selectAllRolesByMember(member);

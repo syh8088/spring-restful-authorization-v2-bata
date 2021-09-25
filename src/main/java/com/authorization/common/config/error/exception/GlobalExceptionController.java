@@ -34,6 +34,18 @@ public class GlobalExceptionController {
                 .build();
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = UserIdNotFoundException.class)
+    @ResponseBody
+    public CommonErrorResponse handleUsernameNotFoundException(UserIdNotFoundException e) {
+
+        return CommonErrorResponse.builder()
+                .errorCode(e.getErrorCode())
+                .message(e.getMessage())
+                .status(HttpStatus.NOT_FOUND.value())
+                .build();
+    }
+
     @ExceptionHandler(value = Exception.class)
     public String handleException() {
         return "error";
